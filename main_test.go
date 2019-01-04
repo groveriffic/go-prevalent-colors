@@ -5,29 +5,38 @@ import (
 	"image"
 	"image/color"
 	_ "image/jpeg"
+	"log"
 	"os"
 	"testing"
 )
 
-func TestEachPixel(t *testing.T) {
-	var i int
+var fixtureImageA image.Image
 
+func TestMain(m *testing.M) {
 	f, err := os.Open("fixtures/10x10.jpg")
 	if err != nil {
-		t.Error(err)
+		log.Fatal(err)
 	}
 
 	img, _, err := image.Decode(f)
 	if err != nil {
-		t.Error(err)
+		log.Fatal(err)
 	}
+	fixtureImageA = img
 
 	err = f.Close()
 	if err != nil {
-		t.Error(err)
+		log.Fatal(err)
 	}
 
-	eachPixel(img, func(x, y int, c color.Color) {
+	// call flag.Parse() here if TestMain uses flags
+	os.Exit(m.Run())
+}
+
+func TestEachPixel(t *testing.T) {
+	var i int
+
+	eachPixel(fixtureImageA, func(x, y int, c color.Color) {
 		i++
 	})
 
@@ -70,4 +79,31 @@ func ExampleNewRGB() {
 	// #000000
 	// #FFFFFF
 	// #FF79FF
+}
+
+func TestColorCounter_Inc(t *testing.T) {
+	cc := make(ColorCounter)
+	c := RGB{}
+	cc.Inc(c)
+	i, ok := cc[c]
+	if !ok {
+		t.Error("incremented color not in map")
+	}
+	if i != 1 {
+		t.Error("incremented color count incorrect")
+	}
+}
+
+func TestColorCounter_Image(t *testing.T) {
+	cc := make(ColorCounter)
+	cc.Image(fixtureImageA)
+
+	rgb := RGB{R: 0x5c, G: 0x6c, B: 0x83}
+	i, ok := cc[rgb]
+	if !ok {
+		t.Error("expected color not in map")
+	}
+	if i != 2 {
+		t.Error("expected color count incorrect")
+	}
 }
