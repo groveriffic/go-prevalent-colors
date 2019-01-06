@@ -107,3 +107,52 @@ func TestColorCounter_Image(t *testing.T) {
 		t.Error("expected color count incorrect")
 	}
 }
+
+func TestColorCounter_Rank(t *testing.T) {
+	cc := ColorCounter{}
+	for i := 0; i < 5; i++ {
+		rgb := RGB{R: uint8(i), G: uint8(i), B: uint8(i)}
+		cc[rgb] = i
+	}
+
+	colors := cc.Rank()
+	t.Logf("%#v\n", colors)
+	if colors[0].R != 0 {
+		t.Fail()
+	}
+	if colors[1].R != 1 {
+		t.Fail()
+	}
+	if colors[2].R != 2 {
+		t.Fail()
+	}
+	if colors[3].R != 3 {
+		t.Fail()
+	}
+	if colors[4].R != 4 {
+		t.Fail()
+	}
+}
+
+func TestColorCounter_TopThree(t *testing.T) {
+	cc := ColorCounter{}
+	for i := 0; i < 5; i++ {
+		rgb := RGB{R: uint8(i), G: uint8(i), B: uint8(i)}
+		cc[rgb] = i
+	}
+
+	colors := cc.TopThree()
+	t.Logf("%#v\n", colors)
+	if colors[0].R != 0 {
+		t.Fail()
+	}
+	if colors[1].R != 1 {
+		t.Fail()
+	}
+	if colors[2].R != 2 {
+		t.Fail()
+	}
+	if len(colors) != 3 {
+		t.Fail()
+	}
+}

@@ -7,6 +7,7 @@ import (
 	_ "image/jpeg"
 	"log"
 	"os"
+	"sort"
 )
 
 func main() {
@@ -101,5 +102,26 @@ func (cc ColorCounter) Image(img image.Image) {
 
 // Rank lists counted colors from most occurances to least
 func (cc ColorCounter) Rank() []RGB {
-	return []RGB{} // TODO
+	colors := []RGB{}
+	for rgb, _ := range cc {
+		colors = append(colors, rgb)
+	}
+	less := func(i, j int) bool {
+		iColor := colors[i]
+		jColor := colors[j]
+		iCount := cc[iColor]
+		jCount := cc[jColor]
+		return iCount < jCount
+	}
+	sort.Slice(colors, less)
+	return colors
+}
+
+// TopThree returns the three most common colors
+func (cc ColorCounter) TopThree() []RGB {
+	// OPTIMIZE: This could be faster by not sorting all colors and only keeping
+	// The top 3.
+	// https://en.wikipedia.org/wiki/Partial_sorting
+	colors := cc.Rank()
+	return colors[:3]
 }
