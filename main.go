@@ -22,17 +22,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// color.RGBA keeps each channel as a uint8
-	// if we ignore the A channel the is equivalent to 6 digit hexidecimal format
-	colorModel := color.RGBAModel
-
-	eachPixel(img, func(x, y int, c color.Color) {
-		cc, ok := colorModel.Convert(c).(color.RGBA)
-		if !ok {
-			log.Fatal("color cast failed")
-		}
-		fmt.Println(x, y, cc.R, cc.G, cc.B, cc.A)
-	})
+	cc := ColorCounter{}
+	cc.Image(img)
+	fmt.Printf("%#v\n", cc)
 }
 
 /* OPTIMIZE: Suspect image.Image uses a fair bit of space. Ideally I would
