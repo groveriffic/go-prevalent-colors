@@ -1,31 +1,72 @@
 package main
 
 import (
+	"bufio"
+	"encoding/csv"
 	"fmt"
 	"image"
 	"image/color"
+	_ "image/gif"
 	_ "image/jpeg"
+	_ "image/png"
 	"log"
+	"net/http"
 	"os"
 	"sort"
 )
 
 func main() {
-	filename := "FApqk3D.jpg"
+	if len(os.Args) < 2 {
+		log.Fatal("Usage: main urls.txt")
+	}
+
+	filename := os.Args[1]
 
 	f, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	img, _, err := image.Decode(f)
-	if err != nil {
-		log.Fatal(err)
+	out := csv.NewWriter(os.Stdout)
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		/* OPTIMIZE: This loop is probably IO bound on the first attempt */
+		url := scanner.Text()
+		log.Println(url)
+
+		resp, err := http.Get(url)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		img, _, err := image.Decode(resp.Body)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		cc := ColorCounter{}
+		cc.Image(img)
+		record := []string{url}
+		for _, rgb := range cc.TopThree() {
+			record = append(record, rgb.String())
+		}
+
+		err = out.Write(record)
+		if err != nil {
+			log.Fatal(err)
+		}
+		out.Flush()
+		if out.Error() != nil {
+			log.Fatal(err)
+		}
 	}
 
-	cc := ColorCounter{}
-	cc.Image(img)
-	fmt.Printf("%#v\n", cc)
+	if err := scanner.Err(); err != nil {
+		log.Fatal("Failed to read file: ", filename, err)
+	}
 }
 
 /* OPTIMIZE: Suspect image.Image uses a fair bit of space. Ideally I would
