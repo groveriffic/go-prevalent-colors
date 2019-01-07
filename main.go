@@ -12,13 +12,15 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime/pprof"
 	"sync"
 
 	"github.com/groveriffic/go-prevalent-colors/color"
 )
 
-var workers = flag.Int("n", 10, "Number of concurrent workers to run")
-var help = flag.Bool("help", false, "Display help message")
+var cpuprofile = flag.String("cpu", "", "write cpu profile to file")
+var workers = flag.Int("n", 10, "number of concurrent workers to run")
+var help = flag.Bool("help", false, "display help message")
 
 func main() {
 	flag.Parse()
@@ -28,6 +30,15 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Usage: go run main.go input.txt")
 		flag.PrintDefaults()
 		return
+	}
+
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
 	}
 
 	log.Println("Input file:", filename)
