@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
+	"flag"
+	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -15,18 +17,25 @@ import (
 	"github.com/groveriffic/go-prevalent-colors/color"
 )
 
+var workers = flag.Int("n", 10, "Number of concurrent workers to run")
+var help = flag.Bool("help", false, "Display help message")
+
 func main() {
-	if len(os.Args) < 2 {
-		log.Fatal("Usage: main urls.txt")
+	flag.Parse()
+	filename := flag.Arg(0)
+
+	if filename == "" || *help {
+		fmt.Fprintln(os.Stderr, "Usage: go run main.go input.txt")
+		flag.PrintDefaults()
+		return
 	}
 
-	filename := os.Args[1]
 	log.Println("Input file:", filename)
+	log.Println("Workers:", *workers)
 
 	lines := generateLines(filename)
 
-	workers := 2
-	records := processURLs(lines, workers)
+	records := processURLs(lines, *workers)
 
 	writeCSV(records)
 	log.Println("Done")
