@@ -82,7 +82,7 @@ func ExampleNewRGB() {
 }
 
 func TestColorCounter_Inc(t *testing.T) {
-	cc := make(ColorCounter)
+	cc := make(Counter)
 	c := RGB{}
 	cc.Inc(c)
 	i, ok := cc[c]
@@ -95,7 +95,7 @@ func TestColorCounter_Inc(t *testing.T) {
 }
 
 func TestColorCounter_Image(t *testing.T) {
-	cc := make(ColorCounter)
+	cc := make(Counter)
 	cc.Image(fixtureImageA)
 
 	rgb := RGB{R: 0x5c, G: 0x6c, B: 0x83}
@@ -109,7 +109,7 @@ func TestColorCounter_Image(t *testing.T) {
 }
 
 func TestColorCounter_Rank(t *testing.T) {
-	cc := ColorCounter{}
+	cc := Counter{}
 	for i := 0; i < 5; i++ {
 		rgb := RGB{R: uint8(i), G: uint8(i), B: uint8(i)}
 		cc[rgb] = i
@@ -135,7 +135,7 @@ func TestColorCounter_Rank(t *testing.T) {
 }
 
 func TestColorCounter_TopThree(t *testing.T) {
-	cc := ColorCounter{}
+	cc := Counter{}
 	for i := 0; i < 5; i++ {
 		rgb := RGB{R: uint8(i), G: uint8(i), B: uint8(i)}
 		cc[rgb] = i

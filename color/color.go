@@ -56,8 +56,8 @@ func (c RGB) String() string {
 	return fmt.Sprintf("#%02X%02X%02X", c.R, c.G, c.B)
 }
 
-// ColorCounter is used to tally all colors in an image
-type ColorCounter map[RGB]int
+// Counter is used to tally all colors in an image
+type Counter map[RGB]int
 
 /* OPTIMIZE: I would be tempted to try a probablistic data structure here to
     reduce space usage.  Count-min sketch might be interesting.
@@ -69,13 +69,13 @@ type ColorCounter map[RGB]int
 */
 
 // Inc increments a single color's count
-func (cc ColorCounter) Inc(c RGB) {
+func (cc Counter) Inc(c RGB) {
 	i := cc[c]
 	cc[c] = i + 1
 }
 
 // Image counts the occurances of each RGB color in an image
-func (cc ColorCounter) Image(img image.Image) {
+func (cc Counter) Image(img image.Image) {
 	eachPixel(img, func(x int, y int, c color.Color) {
 		rgb := NewRGB(c)
 		cc.Inc(rgb)
@@ -83,7 +83,7 @@ func (cc ColorCounter) Image(img image.Image) {
 }
 
 // Rank lists counted colors from most occurances to least
-func (cc ColorCounter) Rank() []RGB {
+func (cc Counter) Rank() []RGB {
 	colors := []RGB{}
 	for rgb, _ := range cc {
 		colors = append(colors, rgb)
@@ -100,7 +100,7 @@ func (cc ColorCounter) Rank() []RGB {
 }
 
 // TopThree returns the three most common colors
-func (cc ColorCounter) TopThree() []RGB {
+func (cc Counter) TopThree() []RGB {
 	// OPTIMIZE: This could be faster by not sorting all colors and only keeping
 	// The top 3.
 	// https://en.wikipedia.org/wiki/Partial_sorting

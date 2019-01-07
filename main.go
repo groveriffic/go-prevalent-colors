@@ -46,7 +46,7 @@ func main() {
 			continue
 		}
 
-		cc := color.ColorCounter{}
+		cc := color.Counter{}
 		cc.Image(img)
 		record := []string{url}
 		for _, rgb := range cc.TopThree() {
