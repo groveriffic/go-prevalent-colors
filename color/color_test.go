@@ -1,4 +1,4 @@
-package main
+package color
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 var fixtureImageA image.Image
 
 func TestMain(m *testing.M) {
-	f, err := os.Open("fixtures/10x10.jpg")
+	f, err := os.Open("../fixtures/10x10.jpg")
 	if err != nil {
 		log.Fatal(err)
 	}
