@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/groveriffic/go-prevalent-colors/color"
 )
@@ -20,50 +21,99 @@ func main() {
 	}
 
 	filename := os.Args[1]
+	log.Println("Input file:", filename)
 
-	f, err := os.Open(filename)
+	lines := generateLines(filename)
+
+	workers := 2
+	records := processURLs(lines, workers)
+
+	writeCSV(records)
+	log.Println("Done")
+}
+
+func generateLines(filename string) (lines chan string) {
+	lines = make(chan string, 1)
+
+	go func() {
+		defer close(lines)
+
+		f, err := os.Open(filename)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			lines <- scanner.Text()
+		}
+		err = scanner.Err()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
+	return
+}
+
+func processURL(url string) (record []string, err error) {
+	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
-	out := csv.NewWriter(os.Stdout)
+	img, _, err := image.Decode(resp.Body)
+	if err != nil {
+		return
+	}
 
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		/* OPTIMIZE: This loop is probably IO bound on the first attempt */
-		url := scanner.Text()
-		log.Println(url)
+	cc := color.Counter{}
+	cc.Image(img)
+	record = []string{url}
+	for _, rgb := range cc.TopThree() {
+		record = append(record, rgb.String())
+	}
+	return
+}
 
-		resp, err := http.Get(url)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-
-		img, _, err := image.Decode(resp.Body)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-
-		cc := color.Counter{}
-		cc.Image(img)
-		record := []string{url}
-		for _, rgb := range cc.TopThree() {
-			record = append(record, rgb.String())
-		}
-
-		err = out.Write(record)
+func writeCSV(records chan []string) {
+	w := csv.NewWriter(os.Stdout)
+	for record := range records {
+		err := w.Write(record)
 		if err != nil {
 			log.Fatal(err)
 		}
-		out.Flush()
-		if out.Error() != nil {
+		w.Flush()
+		err = w.Error()
+		if err != nil {
 			log.Fatal(err)
 		}
 	}
+}
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal("Failed to read file: ", filename, err)
+func processURLs(urls chan string, workers int) chan []string {
+	records := make(chan []string)
+	var wg sync.WaitGroup
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			for url := range urls {
+				log.Println("Processing:", url)
+				record, err := processURL(url)
+				if err != nil {
+					log.Println(err, url)
+				}
+				records <- record
+			}
+		}()
 	}
+
+	go func() {
+		wg.Wait()
+		close(records)
+	}()
+
+	return records
 }
