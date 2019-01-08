@@ -104,6 +104,15 @@ func processURL(url string) (record []string, err error) {
 		return
 	}
 
+	/* NOTE:
+	    It seems like a very large image could cause us problems here.
+			This could be guarded against partially with io.LimitedReader
+			https://godoc.org/io#LimitedReader
+
+			I suspect this wouldn't be a very comprehensive solution as compressed
+			images would not need to be large in filesize to produce large numbers
+			of pixels.
+	*/
 	img, _, err := image.Decode(resp.Body)
 	if err != nil {
 		return
