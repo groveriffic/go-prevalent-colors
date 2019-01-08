@@ -9,6 +9,7 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -21,15 +22,35 @@ import (
 var cpuprofile = flag.String("cpu", "", "write cpu profile to file")
 var workers = flag.Int("n", 10, "number of concurrent workers to run")
 var help = flag.Bool("help", false, "display help message")
+var input = flag.String("input", "", "(required) input file with image urls")
+var outputFile = flag.String("output", "", "output file for CSV")
+var logFile = flag.String("log", "", "log to file")
 
 func main() {
 	flag.Parse()
-	filename := flag.Arg(0)
 
-	if filename == "" || *help {
-		fmt.Fprintln(os.Stderr, "Usage: go run main.go input.txt")
+	if *input == "" || *help {
+		fmt.Fprintln(os.Stderr, "Usage: ./go-prevalent-colors -in input.txt")
 		flag.PrintDefaults()
 		return
+	}
+
+	out := os.Stdout
+	if *outputFile != "" {
+		outF, err := os.Create(*outputFile)
+		if err != nil {
+			log.Fatal("failed to create output file", err)
+		}
+		defer outF.Close()
+		out = outF
+	}
+
+	if *logFile != "" {
+		logF, err := os.Create(*logFile)
+		if err != nil {
+			log.Fatal("failed to create log file", err)
+		}
+		log.SetOutput(logF)
 	}
 
 	if *cpuprofile != "" {
@@ -41,14 +62,14 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	log.Println("Input file:", filename)
+	log.Println("Input file:", *input)
 	log.Println("Workers:", *workers)
 
-	lines := generateLines(filename)
+	lines := generateLines(*input)
 
 	records := processURLs(lines, *workers)
 
-	writeCSV(records)
+	writeCSV(records, out)
 	log.Println("Done")
 }
 
@@ -63,6 +84,7 @@ func generateLines(filename string) (lines chan string) {
 			log.Println(err)
 			return
 		}
+		defer f.Close()
 
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
@@ -96,8 +118,8 @@ func processURL(url string) (record []string, err error) {
 	return
 }
 
-func writeCSV(records chan []string) {
-	w := csv.NewWriter(os.Stdout)
+func writeCSV(records chan []string, out io.Writer) {
+	w := csv.NewWriter(out)
 	for record := range records {
 		err := w.Write(record)
 		if err != nil {

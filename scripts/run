@@ -9,4 +9,9 @@ docker run \
   --memory=512m \
   --cpus=1 \
   golang:1.11.4 \
-  ./go-prevalent-colors -n 10 -cpu cpu.prof fixtures/input.txt
+  ./go-prevalent-colors \
+    -n 10 \
+    -cpu cpu.prof \
+    -input fixtures/input.txt \
+    -output out.csv \
+    -log out.log
