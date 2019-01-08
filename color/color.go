@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
 	"sort"
 )
 
@@ -85,7 +82,7 @@ func (cc Counter) Image(img image.Image) {
 // Rank lists counted colors from most occurances to least
 func (cc Counter) Rank() []RGB {
 	colors := []RGB{}
-	for rgb, _ := range cc {
+	for rgb := range cc {
 		colors = append(colors, rgb)
 	}
 	less := func(i, j int) bool {
