@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# During development I use atom plugins to run tests
+# This script is included to make running tests easier for others
+
+WORKDIR=/usr/local/go/src/github.com/groveriffic/go-prevalent-colors
+
+docker run \
+  --rm \
+  -v "$PWD":"$WORKDIR" \
+  -w "$WORKDIR" \
+  golang:1.11.4 \
+  go test ./...
