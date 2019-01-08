@@ -1,0 +1,10 @@
+#!/bin/bash
+
+WORKDIR=/usr/local/go/src/github.com/groveriffic/go-prevalent-colors
+
+docker run \
+  --rm \
+  -v "$PWD":"$WORKDIR" \
+  -w "$WORKDIR" \
+  golang:1.11.4 \
+  go build -v

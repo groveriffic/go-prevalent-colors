@@ -1,0 +1,12 @@
+#!/bin/bash
+
+WORKDIR=/usr/local/go/src/github.com/groveriffic/go-prevalent-colors
+
+docker run \
+  --rm \
+  -v "$PWD":"$WORKDIR" \
+  -w "$WORKDIR" \
+  --memory=512m \
+  --cpus=1 \
+  golang:1.11.4 \
+  ./go-prevalent-colors -n 10 -cpu cpu.prof fixtures/input.txt
