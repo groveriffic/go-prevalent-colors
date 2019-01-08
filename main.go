@@ -20,7 +20,7 @@ import (
 )
 
 var cpuprofile = flag.String("cpu", "", "write cpu profile to file")
-var workers = flag.Int("n", 10, "number of concurrent workers to run")
+var workers = flag.Int("n", 5, "number of concurrent workers to run")
 var help = flag.Bool("help", false, "display help message")
 var input = flag.String("input", "", "(required) input file with image urls")
 var outputFile = flag.String("output", "", "output file for CSV")

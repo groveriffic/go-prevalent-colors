@@ -10,7 +10,7 @@ docker run \
   --cpus=1 \
   golang:1.11.4 \
   ./go-prevalent-colors \
-    -n 10 \
+    -n 5 \
     -cpu cpu.prof \
     -input fixtures/input.txt \
     -output out.csv \
